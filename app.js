@@ -250,11 +250,14 @@ function calculateSimilarity(candidate) {
       // Direct appeal evidence: Property assessed at lower $/sqft than subject
       const sqftValBonus = Math.min(0.40, (diffSqftVal / subValSqft) * 0.50);
       disputeBonus += sqftValBonus;
-      disputeReasons.push(`Lower $/sqft ($${candValSqft.toFixed(1)} vs $${subValSqft.toFixed(1)}, ${diffPct > 0 ? '+' : ''}${diffPct.toFixed(1)}% lower)`);
+      disputeReasons.push(`Assessed at $${candValSqft.toFixed(2)}/sqft (${diffPct.toFixed(1)}% below subject's $${subValSqft.toFixed(2)}/sqft)`);
 
-      if (cSqft >= sSqft) {
+      if (cSqft > sSqft) {
         disputeBonus += 0.08;
-        disputeReasons.push(`Equal/larger size (${cSqft.toLocaleString()} sqft)`);
+        disputeReasons.push(`Larger livable area (${cSqft.toLocaleString()} sqft vs ${sSqft.toLocaleString()} sqft)`);
+      } else if (cSqft === sSqft) {
+        disputeBonus += 0.08;
+        disputeReasons.push(`Equal livable area (${cSqft.toLocaleString()} sqft)`);
       }
     } else {
       // Penalty if candidate has higher $/sqft
