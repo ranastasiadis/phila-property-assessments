@@ -142,7 +142,8 @@
               <p id="subject-subtitle" class="subject-meta">Parcel Information</p>
             </div>
             <div class="hero-links">
-              <a id="link-atlas" href="https://atlas.phila.gov/#/314152700/property" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+              <span class="hero-rate-pill" id="hero-rate-badge">$0.00 / sqft</span>
+              <a id="link-atlas" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
                 View on Phila Atlas ↗
               </a>
             </div>
@@ -151,53 +152,58 @@
           <div class="hero-metrics-grid">
             <div class="metric-card">
               <span class="metric-label">2026 Assessment</span>
-              <span class="metric-value" id="sub-val-2026">$425,000</span>
-              <span class="metric-sub" id="sub-val-2026-sqft">$208.95 / sqft</span>
+              <span class="metric-value" id="sub-val-2026">-</span>
+              <span class="metric-sub font-semibold" id="sub-val-2026-sqft">-</span>
             </div>
 
             <div class="metric-card primary">
-              <span class="metric-label">2027 Assessment</span>
-              <span class="metric-value highlight" id="sub-val-2027">$553,800</span>
-              <span class="metric-sub" id="sub-val-2027-sqft">$272.27 / sqft</span>
+              <span class="metric-label">2027 Assessment & Rate</span>
+              <span class="metric-value highlight" id="sub-val-2027">-</span>
+              <span class="metric-sub font-semibold highlight-rate" id="sub-val-2027-sqft">-</span>
             </div>
 
             <div class="metric-card" id="card-sub-change">
               <span class="metric-label">Assessment Change</span>
-              <span class="metric-value badge-change" id="sub-pct-change">+30.31%</span>
-              <span class="metric-sub" id="sub-dollar-change">+$128,800 increase</span>
+              <span class="metric-value badge-change" id="sub-pct-change">-</span>
+              <span class="metric-sub" id="sub-dollar-change">-</span>
             </div>
 
             <div class="metric-card">
               <span class="metric-label">Property Profile</span>
-              <span class="metric-value text-md" id="sub-profile-sqft">2,034 sqft</span>
-              <span class="metric-sub" id="sub-profile-details">3 Beds • 2 Baths • 2 Stories • Built 2017</span>
+              <span class="metric-value text-md" id="sub-profile-sqft">-</span>
+              <span class="metric-sub" id="sub-profile-details">-</span>
             </div>
           </div>
 
           <!-- Tax Abatement / Exemption Breakdown Sub-Bar -->
           <div class="tax-breakdown-bar" id="tax-breakdown-container">
             <div class="breakdown-item">
+              <span class="b-dot rate-dot"></span>
+              <span class="b-label">2027 Assessed Rate:</span>
+              <span class="b-val highlight-rate" id="val-assessed-rate">-</span>
+            </div>
+            <div class="breakdown-item">
               <span class="b-dot exempt"></span>
               <span class="b-label">Exempt Building (Abatement):</span>
-              <span class="b-val" id="val-exempt-bldg">$406,175</span>
+              <span class="b-val" id="val-exempt-bldg">-</span>
             </div>
             <div class="breakdown-item">
               <span class="b-dot taxable"></span>
               <span class="b-label">Taxable Building:</span>
-              <span class="b-val" id="val-tax-bldg">$36,925</span>
+              <span class="b-val" id="val-tax-bldg">-</span>
             </div>
             <div class="breakdown-item">
               <span class="b-dot land"></span>
               <span class="b-label">Taxable Land:</span>
-              <span class="b-val" id="val-tax-land">$110,700</span>
+              <span class="b-val" id="val-tax-land">-</span>
             </div>
             <div class="breakdown-item">
               <span class="b-label">Zoning:</span>
-              <span class="b-val" id="val-zoning">RSA5</span>
+              <span class="b-val" id="val-zoning">-</span>
             </div>
             <div class="breakdown-item">
               <span class="b-label">Condition:</span>
-              <span class="b-val" id="val-condition">Good (2)</span>
+              <span class="b-val" id="val-condition">-</span>
             </div>
           </div>
         </section>

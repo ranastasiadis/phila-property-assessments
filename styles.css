@@ -749,6 +749,7 @@ input[type="range"] {
 .b-dot.exempt { background: var(--color-purple); }
 .b-dot.taxable { background: var(--accent-primary); }
 .b-dot.land { background: var(--color-warning); }
+.b-dot.rate-dot { background: #2563eb; }
 
 .b-label {
   color: var(--text-muted);
@@ -757,6 +758,24 @@ input[type="range"] {
 .b-val {
   font-weight: 700;
   color: var(--text-primary);
+}
+
+.b-val.highlight-rate, .highlight-rate {
+  color: #2563eb;
+  font-weight: 800;
+}
+
+.hero-rate-pill {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
 }
 
 /* Anomaly Section */

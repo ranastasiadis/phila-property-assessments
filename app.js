@@ -597,6 +597,9 @@ function renderSubjectCard() {
   document.getElementById('subject-subtitle').textContent = `Parcel #${p.parcel_number} • Ward ${p.geographic_ward || 'N/A'} • Census Tract ${p.census_tract || 'N/A'} • Zip ${p.zip_code || 'N/A'}`;
   document.getElementById('link-atlas').href = `https://atlas.phila.gov/#/${p.parcel_number}/property`;
 
+  const rateBadge = document.getElementById('hero-rate-badge');
+  if (rateBadge) rateBadge.textContent = `$${p.val_per_sqft_2027.toFixed(2)} / sqft`;
+
   document.getElementById('sub-val-2026').textContent = val26 ? formatMoney(val26) : 'N/A';
   document.getElementById('sub-val-2026-sqft').textContent = val26 ? `$${p.val_per_sqft_2026.toFixed(2)} / sqft` : '';
 
@@ -607,10 +610,15 @@ function renderSubjectCard() {
   pctElem.textContent = formatPercent(pctChange);
   pctElem.className = `metric-value badge-change ${pctChange <= 0 ? 'decrease' : ''}`;
 
-  document.getElementById('sub-dollar-change').textContent = `${dollarChange >= 0 ? '+' : ''}${formatMoney(dollarChange)} change`;
+  const dollarPerSqftChange = (val26 && sqft > 0) ? (dollarChange / sqft) : 0;
+  const sqftDeltaStr = dollarPerSqftChange !== 0 ? ` (${dollarPerSqftChange >= 0 ? '+' : ''}$${dollarPerSqftChange.toFixed(2)}/sqft)` : '';
+  document.getElementById('sub-dollar-change').textContent = `${dollarChange >= 0 ? '+' : ''}${formatMoney(dollarChange)} change${sqftDeltaStr}`;
 
   document.getElementById('sub-profile-sqft').textContent = `${sqft.toLocaleString()} sqft`;
-  document.getElementById('sub-profile-details').textContent = `${p.number_of_bedrooms || 0} Beds • ${p.number_of_bathrooms || 0} Baths • ${p.number_stories || 2} Stories • Built ${p.year_built || 'N/A'}`;
+  document.getElementById('sub-profile-details').textContent = `${p.number_of_bedrooms || 0} Beds • ${p.number_of_bathrooms || 0} Baths • Built ${p.year_built || 'N/A'}`;
+
+  const rateElem = document.getElementById('val-assessed-rate');
+  if (rateElem) rateElem.textContent = `$${p.val_per_sqft_2027.toFixed(2)} / sqft`;
 
   if (rec27) {
     document.getElementById('val-exempt-bldg').textContent = formatMoney(Number(rec27.exempt_building || 0));
