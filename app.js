@@ -1143,8 +1143,15 @@ function populateAppealDocument() {
   document.getElementById('doc-sub-layout').textContent = `${s.number_of_bedrooms || 0} Beds / ${s.number_of_bathrooms || 0} Baths`;
   document.getElementById('doc-sub-year').textContent = s.year_built || 'N/A';
   document.getElementById('doc-sub-zoning').textContent = `${s.zoning || 'RSA5'} / Ward ${s.geographic_ward || 'N/A'}`;
-  document.getElementById('doc-sub-v26').textContent = formatMoney(s.val_2026);
+  document.getElementById('doc-sub-v26').textContent = s.val_2026 ? formatMoney(s.val_2026) : 'N/A';
   document.getElementById('doc-sub-v27').textContent = `${formatMoney(s.val_2027)} (${formatPercent(s.pct_change)})`;
+
+  const sValSqft27 = s.val_per_sqft_2027 ? `$${s.val_per_sqft_2027.toFixed(2)} / sq. ft.` : 'N/A';
+  const sValSqft26 = s.val_per_sqft_2026 ? `$${s.val_per_sqft_2026.toFixed(2)} / sq. ft.` : 'N/A';
+  const r26Elem = document.getElementById('doc-sub-r26');
+  if (r26Elem) r26Elem.textContent = sValSqft26;
+  const r27Elem = document.getElementById('doc-sub-r27');
+  if (r27Elem) r27Elem.textContent = sValSqft27;
 
   const pctChanges = activeComps.map(c => Number(c.pct_change)).filter(n => !isNaN(n)).sort((a, b) => a - b);
   const sqftValues = activeComps.map(c => Number(c.val_per_sqft_2027)).filter(n => !isNaN(n) && n > 0).sort((a, b) => a - b);
@@ -1161,8 +1168,8 @@ function populateAppealDocument() {
   document.getElementById('doc-appeal-median-increase').textContent = formatPercent(medianPct);
   document.getElementById('doc-appeal-mean-increase').textContent = formatPercent(avgPct);
 
-  document.getElementById('doc-disp-current').textContent = formatMoney(s.val_2027);
-  document.getElementById('doc-disp-equitable').textContent = formatMoney(projFair);
+  document.getElementById('doc-disp-current').textContent = `${formatMoney(s.val_2027)} (${sValSqft27})`;
+  document.getElementById('doc-disp-equitable').textContent = `${formatMoney(projFair)} ($${medianSqft.toFixed(2)} / sq. ft. cohort median)`;
   document.getElementById('doc-disp-over').textContent = `+${formatMoney(disparity)}`;
 
   const tbody = document.getElementById('doc-comps-tbody');

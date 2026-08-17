@@ -49,7 +49,7 @@
         <div class="search-bar-wrapper">
           <div class="search-input-group">
             <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="address-input" placeholder="Enter Philadelphia street address (e.g. 1000 S BROAD ST)..." autocomplete="off" value="">
+            <input type="text" id="address-input" placeholder="Enter Philadelphia street address (e.g. 1000 N BROAD ST)..." autocomplete="off" value="">
             <button id="btn-clear-search" class="btn-icon" title="Clear">✕</button>
             <button id="btn-search" class="btn btn-primary search-btn">Analyze Property</button>
           </div>
@@ -415,6 +415,12 @@
                   <td><strong>2027 Market Value:</strong></td>
                   <td id="doc-sub-v27">-</td>
                 </tr>
+                <tr>
+                  <td><strong>2026 Assessed Rate:</strong></td>
+                  <td id="doc-sub-r26">-</td>
+                  <td><strong>2027 Assessed Rate:</strong></td>
+                  <td id="doc-sub-r27">-</td>
+                </tr>
               </table>
             </div>
 
@@ -426,9 +432,9 @@
                 A comparative analysis of <span id="doc-appeal-count">10</span> most physically and geographically comparable residential properties shows a median assessment increase of <strong><span id="doc-appeal-median-increase">+2.45%</span></strong> (mean: <span id="doc-appeal-mean-increase">+0.92%</span>).
               </p>
               <div class="doc-disparity-box">
-                <div><strong>Current 2027 Assessment:</strong> <span id="doc-disp-current">$553,800</span></div>
-                <div><strong>Equitable Cohort Value (Median Increase):</strong> <span id="doc-disp-equitable">$435,412</span></div>
-                <div><strong>Estimated Over-Assessment Disparity:</strong> <span id="doc-disp-over" class="text-danger">+$118,388</span></div>
+                <div><strong>Current 2027 Assessment:</strong> <span id="doc-disp-current">-</span></div>
+                <div><strong>Equitable Cohort Value:</strong> <span id="doc-disp-equitable">-</span></div>
+                <div><strong>Estimated Over-Assessment Disparity:</strong> <span id="doc-disp-over" class="text-danger">-</span></div>
               </div>
             </div>
 
