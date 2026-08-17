@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Philadelphia Property Assessment & Dynamic Comps Explorer</title>
+  <meta name="description" content="Dynamically match Philadelphia properties by size, stories, era, and location to analyze 2026-2027 property assessment changes and build tax appeal evidence using live OPA Carto data.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS for Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- App Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="brand">
+          <div class="brand-badge">OPA DATA</div>
+          <div class="brand-text">
+            <h1>Philly Property Assessment Explorer</h1>
+            <p>Dynamic parcel matching, assessment anomaly detection & tax appeal evidence</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="btn-open-appeal" class="btn btn-primary" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Generate Appeal Packet
+          </button>
+          <button id="btn-export-csv" class="btn btn-secondary" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export CSV
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-content">
+      <!-- Search & Controls Bar -->
+      <section class="search-panel card">
+        <div class="search-bar-wrapper">
+          <div class="search-input-group">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="address-input" placeholder="Enter Philadelphia street address (e.g. 1000 N BROAD ST)..." autocomplete="off" value="">
+            <button id="btn-clear-search" class="btn-icon" title="Clear">✕</button>
+            <button id="btn-search" class="btn btn-primary search-btn">Analyze Property</button>
+          </div>
+          <div id="autocomplete-results" class="autocomplete-dropdown hidden"></div>
+        </div>
+      </section>
+
+      <!-- Match Tuner & Configuration Bar -->
+      <section class="controls-panel card">
+        <div class="controls-header">
+          <h2>Dynamic Matching Criteria</h2>
+          <div class="preset-selector">
+            <span class="control-label">Matching Preset:</span>
+            <div class="button-group" id="preset-buttons">
+              <button class="btn btn-tab active" data-preset="balanced">Balanced Comps</button>
+              <button class="btn btn-tab" data-preset="era">Same Era / Modern Build</button>
+              <button class="btn btn-tab" data-preset="proximity">Immediate Block</button>
+              <button class="btn btn-tab" data-preset="layout">Exact Size & Layout</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-grid">
+          <div class="control-group">
+            <div class="control-label-wrapper">
+              <label for="slider-matches">Number of Closest Matches:</label>
+              <span id="label-matches-val" class="control-val">10</span>
+            </div>
+            <input type="range" id="slider-matches" min="3" max="40" step="1" value="10">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-wrapper">
+              <label for="slider-radius">Search Radius:</label>
+              <span id="label-radius-val" class="control-val">1,000m (0.62 mi)</span>
+            </div>
+            <input type="range" id="slider-radius" min="200" max="3000" step="100" value="1000">
+          </div>
+
+          <div class="control-group">
+            <div class="control-label-wrapper">
+              <label for="select-category">Building Category:</label>
+            </div>
+            <select id="select-category" class="form-select">
+              <option value="AUTO" selected>Auto (Same as Subject)</option>
+              <option value="SINGLE FAMILY">Single Family</option>
+              <option value="MULTI FAMILY">Multi-Family</option>
+              <option value="ALL">All Residential</option>
+            </select>
+          </div>
+
+          <div class="control-group dispute-control-group">
+            <div class="dispute-box">
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-dispute" checked>
+                <span class="toggle-slider"></span>
+              </label>
+              <div class="dispute-text">
+                <div class="dispute-label">Dispute Mode (Appeal Preference)</div>
+                <div class="dispute-sub">Preferences comps with lower assessed $/sqft</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="loading-container hidden">
+        <div class="spinner"></div>
+        <p id="loading-text">Querying Philadelphia Carto API and calculating spatial similarity models...</p>
+      </div>
+
+      <!-- Initial Empty State -->
+      <section id="empty-state" class="empty-state card">
+        <div class="empty-icon-wrap">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon-svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        </div>
+        <h2>Philadelphia Property Assessment & Comps Explorer</h2>
+        <p>Enter any Philadelphia street address in the search box above (e.g. <code>1000 N BROAD ST</code> or <code>1629 CHRISTIAN ST</code>) to analyze assessment changes, dynamically find comparable properties, and build tax appeal evidence.</p>
+      </section>
+
+      <!-- Main Results Container -->
+      <div id="results-container" class="hidden">
+        <!-- Subject Property Hero Card -->
+        <section class="subject-hero card" id="subject-card">
+          <div class="hero-header">
+            <div>
+              <div class="hero-badge">SUBJECT PROPERTY</div>
+              <h2 id="subject-address" class="subject-title">Property Location</h2>
+              <p id="subject-subtitle" class="subject-meta">Parcel Information</p>
+            </div>
+            <div class="hero-links">
+              <a id="link-atlas" href="https://atlas.phila.gov/#/314152700/property" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+                View on Phila Atlas ↗
+              </a>
+            </div>
+          </div>
+
+          <div class="hero-metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">2026 Assessment</span>
+              <span class="metric-value" id="sub-val-2026">$425,000</span>
+              <span class="metric-sub" id="sub-val-2026-sqft">$208.95 / sqft</span>
+            </div>
+
+            <div class="metric-card primary">
+              <span class="metric-label">2027 Assessment</span>
+              <span class="metric-value highlight" id="sub-val-2027">$553,800</span>
+              <span class="metric-sub" id="sub-val-2027-sqft">$272.27 / sqft</span>
+            </div>
+
+            <div class="metric-card" id="card-sub-change">
+              <span class="metric-label">Assessment Change</span>
+              <span class="metric-value badge-change" id="sub-pct-change">+30.31%</span>
+              <span class="metric-sub" id="sub-dollar-change">+$128,800 increase</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Property Profile</span>
+              <span class="metric-value text-md" id="sub-profile-sqft">2,034 sqft</span>
+              <span class="metric-sub" id="sub-profile-details">3 Beds • 2 Baths • 2 Stories • Built 2017</span>
+            </div>
+          </div>
+
+          <!-- Tax Abatement / Exemption Breakdown Sub-Bar -->
+          <div class="tax-breakdown-bar" id="tax-breakdown-container">
+            <div class="breakdown-item">
+              <span class="b-dot exempt"></span>
+              <span class="b-label">Exempt Building (Abatement):</span>
+              <span class="b-val" id="val-exempt-bldg">$406,175</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="b-dot taxable"></span>
+              <span class="b-label">Taxable Building:</span>
+              <span class="b-val" id="val-tax-bldg">$36,925</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="b-dot land"></span>
+              <span class="b-label">Taxable Land:</span>
+              <span class="b-val" id="val-tax-land">$110,700</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="b-label">Zoning:</span>
+              <span class="b-val" id="val-zoning">RSA5</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="b-label">Condition:</span>
+              <span class="b-val" id="val-condition">Good (2)</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Anomaly & Fairness Gauge Card -->
+        <section class="anomaly-section card">
+          <div class="anomaly-header">
+            <div>
+              <h3>Assessment Anomaly & Fairness Gauge</h3>
+              <p>Statistical comparison against the <span id="text-matched-count">10</span> most comparable parcels in your area</p>
+            </div>
+            <div id="anomaly-badge" class="anomaly-pill pill-danger">
+              ⚠️ Severe Outlier (100th Percentile)
+            </div>
+          </div>
+
+          <div class="anomaly-grid">
+            <div class="anomaly-stat">
+              <div class="stat-num" id="stat-cohort-median">+2.45%</div>
+              <div class="stat-desc">Cohort Median % Change</div>
+              <div class="stat-footnote" id="stat-cohort-avg">Average: +0.92%</div>
+            </div>
+
+            <div class="anomaly-stat">
+              <div class="stat-num" id="stat-cohort-sqft">$278.80</div>
+              <div class="stat-desc">Cohort Median $/SqFt (2027)</div>
+              <div class="stat-footnote" id="stat-cohort-sqft-avg">Average: $269.57 / sqft</div>
+            </div>
+
+            <div class="anomaly-stat">
+              <div class="stat-num text-success" id="stat-target-val">$435,412</div>
+              <div class="stat-desc">Projected Fair Assessment</div>
+              <div class="stat-footnote">Based on cohort median increase</div>
+            </div>
+
+            <div class="anomaly-stat">
+              <div class="stat-num text-danger" id="stat-overassessment">~$118,388</div>
+              <div class="stat-desc">Est. Over-Assessment Disparity</div>
+              <div class="stat-footnote">Basis for Property Tax Appeal</div>
+            </div>
+          </div>
+
+          <!-- Percentile Visual Track Bar -->
+          <div class="percentile-track-wrapper">
+            <div class="percentile-labels">
+              <span>Lower Assessment (0%)</span>
+              <span>Cohort Median (50%)</span>
+              <span>Higher Assessment (100%)</span>
+            </div>
+            <div class="percentile-bar">
+              <div class="percentile-fill" id="percentile-fill" style="width: 100%;"></div>
+              <div class="percentile-marker" id="percentile-marker" style="left: 100%;">
+                <div class="marker-bubble" id="marker-bubble">You: +30.3%</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Map & Visualization Row -->
+        <section class="visuals-grid">
+          <!-- Interactive Map Card -->
+          <div class="map-card card">
+            <div class="card-header-flex">
+              <div>
+                <h3>Geographic Comps Map</h3>
+                <p>Proximity of matched comparable parcels</p>
+              </div>
+              <div class="map-legend">
+                <span class="legend-item"><span class="legend-dot star"></span> Subject</span>
+                <span class="legend-item"><span class="legend-dot green"></span> &le; 0% Change</span>
+                <span class="legend-item"><span class="legend-dot yellow"></span> 0% - 5% Change</span>
+                <span class="legend-item"><span class="legend-dot red"></span> &gt; 5% Change</span>
+              </div>
+            </div>
+            <div id="comps-map" class="map-view"></div>
+          </div>
+
+          <!-- Chart Cards Column -->
+          <div class="charts-column">
+            <!-- Assessment % Change Comparison Chart -->
+            <div class="chart-card card">
+              <div class="card-header-flex">
+                <div>
+                  <h4>% Assessment Change vs Comps</h4>
+                  <p>2026 to 2027 Value Growth Rate</p>
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="chart-pct-change"></canvas>
+              </div>
+            </div>
+
+            <!-- Historical Assessment Trend Chart -->
+            <div class="chart-card card">
+              <div class="card-header-flex">
+                <div>
+                  <h4>Multi-Year Assessment History</h4>
+                  <p>Historical Market Value (2015 - 2027)</p>
+                </div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="chart-history"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Value vs Livable Area Scatter Plot -->
+        <section class="scatter-section card">
+          <div class="card-header-flex">
+            <div>
+              <h3>Livable SqFt vs 2027 Market Value Distribution</h3>
+              <p>Assessed value alignment relative to home size</p>
+            </div>
+          </div>
+          <div class="chart-wrapper-lg">
+            <canvas id="chart-scatter"></canvas>
+          </div>
+        </section>
+
+        <!-- Comparables Table Card -->
+        <section class="table-section card">
+          <div class="card-header-flex">
+            <div>
+              <h3>Ranked Comparable Properties</h3>
+              <p>Click column headers to sort • Click any row to center on map</p>
+            </div>
+            <div class="table-actions">
+              <button id="btn-toggle-all" class="btn btn-outline btn-sm">Select All For Appeal</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="comps-table" id="comps-table">
+              <thead>
+                <tr>
+                  <th data-sort="include" class="th-center">Include</th>
+                  <th data-sort="rank" class="th-center sortable">#</th>
+                  <th data-sort="score" class="sortable">Score</th>
+                  <th data-sort="location" class="sortable">Address</th>
+                  <th>Matched Attributes &amp; Appeal Evidence</th>
+                  <th data-sort="dist" class="sortable">Distance</th>
+                  <th data-sort="sqft" class="sortable">Livable SqFt</th>
+                  <th data-sort="stories" class="sortable">Stories</th>
+                  <th data-sort="beds" class="sortable">Beds/Baths</th>
+                  <th data-sort="year" class="sortable">Year</th>
+                  <th data-sort="val26" class="sortable">2026 Val</th>
+                  <th data-sort="val27" class="sortable">2027 Val</th>
+                  <th data-sort="pct" class="sortable">Change %</th>
+                  <th data-sort="sqftval" class="sortable">$/SqFt</th>
+                  <th class="th-center">Atlas</th>
+                </tr>
+              </thead>
+              <tbody id="comps-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Appeal Packet Modal -->
+    <div id="appeal-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title">
+            <h3>Property Assessment Appeal Evidence Packet</h3>
+            <p>Prepared for Philadelphia Board of Revision of Taxes (BRT) / OPA First Level Review</p>
+          </div>
+          <div class="modal-actions">
+            <button id="btn-print-appeal" class="btn btn-primary btn-sm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+              Print / Save as PDF
+            </button>
+            <button id="btn-close-modal" class="btn-icon">✕</button>
+          </div>
+        </div>
+
+        <div class="modal-body" id="appeal-document-content">
+          <!-- Printable Appeal Document -->
+          <div class="appeal-document">
+            <div class="doc-header">
+              <div class="doc-title-block">
+                <h2>PROPERTY ASSESSMENT APPEAL EVIDENCE SUMMARY</h2>
+                <div class="doc-sub">City of Philadelphia • Office of Property Assessment • Comparative Market Analysis</div>
+              </div>
+              <div class="doc-date" id="appeal-doc-date">Date: August 16, 2026</div>
+            </div>
+
+            <div class="doc-section">
+              <h4>1. SUBJECT PROPERTY IDENTIFICATION</h4>
+              <table class="doc-summary-table">
+                <tr>
+                  <td><strong>Property Address:</strong></td>
+                  <td id="doc-sub-address">-</td>
+                  <td><strong>OPA Account / Parcel:</strong></td>
+                  <td id="doc-sub-parcel">-</td>
+                </tr>
+                <tr>
+                  <td><strong>Total Livable Area:</strong></td>
+                  <td id="doc-sub-sqft">-</td>
+                  <td><strong>Building Layout:</strong></td>
+                  <td id="doc-sub-layout">-</td>
+                </tr>
+                <tr>
+                  <td><strong>Year Built:</strong></td>
+                  <td id="doc-sub-year">-</td>
+                  <td><strong>Zoning / Ward:</strong></td>
+                  <td id="doc-sub-zoning">-</td>
+                </tr>
+                <tr>
+                  <td><strong>2026 Market Value:</strong></td>
+                  <td id="doc-sub-v26">-</td>
+                  <td><strong>2027 Market Value:</strong></td>
+                  <td id="doc-sub-v27">-</td>
+                </tr>
+              </table>
+            </div>
+
+            <div class="doc-section">
+              <h4>2. GROUNDS FOR APPEAL & UNIFORMITY ANALYSIS</h4>
+              <p class="doc-legal-note">
+                Under the Pennsylvania Constitution (Article VIII, Section 1 - Uniformity Clause), all taxes must be uniform upon the same class of subjects.
+                The subject property's assessment was increased by <strong><span id="doc-appeal-increase">+30.31%</span></strong> for tax year 2027.
+                A comparative analysis of <span id="doc-appeal-count">10</span> most physically and geographically comparable residential properties shows a median assessment increase of <strong><span id="doc-appeal-median-increase">+2.45%</span></strong> (mean: <span id="doc-appeal-mean-increase">+0.92%</span>).
+              </p>
+              <div class="doc-disparity-box">
+                <div><strong>Current 2027 Assessment:</strong> <span id="doc-disp-current">$553,800</span></div>
+                <div><strong>Equitable Cohort Value (Median Increase):</strong> <span id="doc-disp-equitable">$435,412</span></div>
+                <div><strong>Estimated Over-Assessment Disparity:</strong> <span id="doc-disp-over" class="text-danger">+$118,388</span></div>
+              </div>
+            </div>
+
+            <div class="doc-section">
+              <h4>3. SCHEDULE OF COMPARABLE PROPERTIES (COMPS)</h4>
+              <table class="doc-comps-table" id="doc-comps-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Comparable Address</th>
+                    <th>Matched Characteristics</th>
+                    <th>Appeal Evidence Rationale</th>
+                    <th>Dist</th>
+                    <th>SqFt</th>
+                    <th>Yr</th>
+                    <th>2026 Val</th>
+                    <th>2027 Val</th>
+                    <th>Change %</th>
+                    <th>$/SqFt</th>
+                  </tr>
+                </thead>
+                <tbody id="doc-comps-tbody">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Data Source: City of Philadelphia Office of Property Assessment (OPA) OpenData via Carto SQL API • Tables: <code>opa_properties_public</code> & <code>assessments</code>.</p>
+    </footer>
+  </div>
+
+  <!-- Scripts: Leaflet, Chart.js, App Logic -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
