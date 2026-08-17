@@ -106,9 +106,9 @@ $$S_{\text{dist}} = \max\left(0, 1 - \frac{D_m}{R_{\text{max}} \times 1.1}\right
 
 ### 2. Preset Weight Matrix
 
-The base composite similarity percentage is computed as the weighted linear combination of the normalized feature scores:
+The base composite similarity score is computed as the weighted linear combination of the normalized feature scores:
 
-$$\text{Base Similarity (\%)} = \left(\sum_{k \in \mathcal{F}} w_k \cdot S_k\right) \times 100\%$$
+$$\text{Base Similarity} = \left(\sum_{k \in \mathcal{F}} w_k \cdot S_k\right) \times 100$$
 
 | Feature ($k$) | Balanced ($w_{\text{bal}}$) | Same Era ($w_{\text{era}}$) | Proximity ($w_{\text{prox}}$) | Strict Layout ($w_{\text{lay}}$) |
 |---|:---:|:---:|:---:|:---:|
@@ -131,11 +131,12 @@ $$\text{Rate}_s = \frac{\text{MarketValue}_{2027, s}}{\text{SqFt}_s}, \quad \tex
 $$\Delta_{\text{Rate}} = \frac{\text{Rate}_s - \text{Rate}_c}{\text{Rate}_s}$$
 
 - **Lower $/SqFt Bonus** ($\Delta_{\text{Rate}} > 0$): Candidate property is assessed at a lower rate per square foot than the subject:
-  $$\text{Bonus} = \min\left(0.40, \Delta_{\text{Rate}} \times 0.50\right) + \begin{cases} 0.08 & \text{if } \text{SqFt}_c \ge \text{SqFt}_s \\ 0 & \text{otherwise} \end{cases}$$
-- **Higher $/SqFt Penalty** ($\Delta_{\text{Rate}} \le 0$): Candidate property is assessed at a higher rate per square foot:
-  $$\text{Penalty} = \min\left(0.35, |\Delta_{\text{Rate}}| \times 0.40\right)$$
+  $$\text{Bonus} = \min(0.40, \Delta_{\text{Rate}} \times 0.50) + (\text{SqFt}_c \ge \text{SqFt}_s \ ? \ 0.08 : 0.0)$$
 
-$$\text{Dispute Score} = \min\left(100\%, \max\left(0\%, \left(\sum w_k S_k + \text{Bonus} - \text{Penalty}\right) \times 100\%\right)\right)$$
+- **Higher $/SqFt Penalty** ($\Delta_{\text{Rate}} \le 0$): Candidate property is assessed at a higher rate per square foot:
+  $$\text{Penalty} = \min(0.35, |\Delta_{\text{Rate}}| \times 0.40)$$
+
+$$\text{Dispute Score} = \min(100, \max(0, \text{Base Similarity} + (\text{Bonus} - \text{Penalty}) \times 100))$$
 
 ---
 
@@ -143,9 +144,9 @@ $$\text{Dispute Score} = \min\left(100\%, \max\left(0\%, \left(\sum w_k S_k + \t
 
 The equitable valuation target and potential over-assessment disparity are derived directly from the cohort's statistical distribution:
 
-$$\text{Target Valuation}_{\text{Dispute}} = \text{SqFt}_s \times \text{Median}\left(\left\{\text{Rate}_{c_1}, \dots, \text{Rate}_{c_N}\right\}\right)$$
+$$\text{Target Valuation}_{\text{Dispute}} = \text{SqFt}_s \times \text{Median}(\text{Rate}_{c_1}, \text{Rate}_{c_2}, \dots, \text{Rate}_{c_N})$$
 
-$$\text{Over-Assessment Disparity} = \max\left(0, \text{MarketValue}_{2027, s} - \text{Target Valuation}\right)$$
+$$\text{Over-Assessment Disparity} = \max(0, \text{MarketValue}_{2027, s} - \text{Target Valuation}_{\text{Dispute}})$$
 
 ---
 
