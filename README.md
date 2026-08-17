@@ -54,7 +54,7 @@ python opa_comps.py "1629 CHRISTIAN ST" --dispute
 python opa_comps.py "1629 CHRISTIAN ST" --matches 10 --radius 1000 --dispute --export appeal_comps.csv
 
 # Use a specific weighting preset: balanced, era, proximity, layout
-python opa_comps.py "1000 N BROAD ST" --matches 15 --preset era --dispute
+python opa_comps.py "1000 S BROAD ST" --matches 15 --preset era --dispute
 ```
 
 #### CLI Options:
