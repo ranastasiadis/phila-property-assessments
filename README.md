@@ -15,7 +15,7 @@ Dynamically finds the closest comparable properties based on multivariate physic
    - Computes normalized feature distance across **Livable Square Feet**, **Number of Stories**, **Bedrooms / Bathrooms**, **Year Built / Era**, **Exterior Condition**, and **Geographic Distance**.
    - Includes preset matching modes: *Balanced Comps*, *Same Era / Modern Build*, *Immediate Block*, and *Exact Size & Layout*.
 3. **Dispute Mode (Tax Appeal Preference)**:
-   - Preferences comparable properties with **lower assessed value per square foot ($\$/\text{sqft}$)** and equal/larger size to construct rigorous legal evidence under the **Pennsylvania Constitution Uniformity Clause**.
+   - Preferences comparable properties with **lower assessed value per square foot ($/sqft)** and equal/larger size to construct rigorous legal evidence under the **Pennsylvania Constitution Uniformity Clause**.
 4. **Assessment Anomaly & Disparity Meter**:
    - Computes the cohort median and mean % assessment change and assessed $/sqft.
    - Calculates your assessment percentile relative to comparable homes (e.g. 100th percentile outlier).
@@ -68,7 +68,7 @@ Increases geographic distance weight to **$40\%$** and reduces the search radius
 Allocates **$80\%$** of total weight to physical building dimensions ($45\%$ Livable Area, $20\%$ Stories, $15\%$ Beds/Baths). Ensures that only properties of nearly identical architectural footprint and room counts are matched.
 
 ### 5. Dispute Mode (`--dispute` / Toggle)
-When preparing an assessment appeal before the Board of Revision of Taxes (BRT), the taxpayer must demonstrate non-uniformity. Dispute Mode adjusts the composite score by giving substantial priority boosts to properties with **lower assessed $\$/\text{sqft}$**, while penalizing higher $\$/\text{sqft}$ properties that would inflate the cohort average.
+When preparing an assessment appeal before the Board of Revision of Taxes (BRT), the taxpayer must demonstrate non-uniformity. Dispute Mode adjusts the composite score by giving substantial priority boosts to properties with **lower assessed $/sqft**, while penalizing higher $/sqft properties that would inflate the cohort average.
 
 ---
 
@@ -124,16 +124,16 @@ $$\text{Base Similarity (\%)} = \left(\sum_{k \in \mathcal{F}} w_k \cdot S_k\rig
 
 ### 3. Dispute Mode Scoring Formula
 
-When Dispute Mode is enabled, the algorithm computes the relative disparity in 2027 assessed value per square foot:
+When Dispute Mode is enabled, the algorithm computes the relative disparity in 2027 assessed rate per square foot:
 
-$$(\$/\text{sqft})_s = \frac{\text{MarketValue}_{2027, s}}{\text{SqFt}_s}, \quad (\$/\text{sqft})_c = \frac{\text{MarketValue}_{2027, c}}{\text{SqFt}_c}$$
+$$\text{Rate}_s = \frac{\text{MarketValue}_{2027, s}}{\text{SqFt}_s}, \quad \text{Rate}_c = \frac{\text{MarketValue}_{2027, c}}{\text{SqFt}_c}$$
 
-$$\Delta_{\$/\text{sqft}} = \frac{(\$/\text{sqft})_s - (\$/\text{sqft})_c}{(\$/\text{sqft})_s}$$
+$$\Delta_{\text{Rate}} = \frac{\text{Rate}_s - \text{Rate}_c}{\text{Rate}_s}$$
 
-- **Lower $\$/\text{SqFt}$ Bonus** ($\Delta > 0$): Comp is assessed at a lower rate per square foot than the subject:
-  $$\text{Bonus} = \min\left(0.40, \Delta_{\$/\text{sqft}} \times 0.50\right) + \begin{cases} 0.08 & \text{if } \text{SqFt}_c \ge \text{SqFt}_s \\ 0 & \text{otherwise} \end{cases}$$
-- **Higher $\$/\text{SqFt}$ Penalty** ($\Delta \le 0$): Comp is assessed at a higher rate per square foot:
-  $$\text{Penalty} = \min\left(0.35, |\Delta_{\$/\text{sqft}}| \times 0.40\right)$$
+- **Lower $/SqFt Bonus** ($\Delta_{\text{Rate}} > 0$): Candidate property is assessed at a lower rate per square foot than the subject:
+  $$\text{Bonus} = \min\left(0.40, \Delta_{\text{Rate}} \times 0.50\right) + \begin{cases} 0.08 & \text{if } \text{SqFt}_c \ge \text{SqFt}_s \\ 0 & \text{otherwise} \end{cases}$$
+- **Higher $/SqFt Penalty** ($\Delta_{\text{Rate}} \le 0$): Candidate property is assessed at a higher rate per square foot:
+  $$\text{Penalty} = \min\left(0.35, |\Delta_{\text{Rate}}| \times 0.40\right)$$
 
 $$\text{Dispute Score} = \min\left(100\%, \max\left(0\%, \left(\sum w_k S_k + \text{Bonus} - \text{Penalty}\right) \times 100\%\right)\right)$$
 
@@ -143,7 +143,7 @@ $$\text{Dispute Score} = \min\left(100\%, \max\left(0\%, \left(\sum w_k S_k + \t
 
 The equitable valuation target and potential over-assessment disparity are derived directly from the cohort's statistical distribution:
 
-$$\text{Target Valuation}_{\text{Dispute}} = \text{SqFt}_s \times \text{Median}\left(\left\{(\$/\text{sqft})_{c_1}, \dots, (\$/\text{sqft})_{c_N}\right\}\right)$$
+$$\text{Target Valuation}_{\text{Dispute}} = \text{SqFt}_s \times \text{Median}\left(\left\{\text{Rate}_{c_1}, \dots, \text{Rate}_{c_N}\right\}\right)$$
 
 $$\text{Over-Assessment Disparity} = \max\left(0, \text{MarketValue}_{2027, s} - \text{Target Valuation}\right)$$
 
